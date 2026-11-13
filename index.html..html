@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#29204f">
+<title>Культура для всех — интерактивная карта</title>
+<style>
+:root{--ink:#29204f;--paper:#fbf8ff;--muted:#716982;--line:#e8e0f1;--purple:#9c83d8}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#faf6ff,#fffaf6);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:960px;margin:auto;padding:22px 16px 42px}
+header{background:linear-gradient(135deg,#302452,#57447f);color:white;border-radius:24px;padding:28px 22px;text-align:center;box-shadow:0 12px 30px #30245222}
+header .symbol{font-size:34px}
+h1{font-size:clamp(27px,5vw,42px);margin:8px 0 4px;letter-spacing:.02em}
+header p{margin:0;color:#e9e0fa}
+.tagline{display:inline-block;margin-top:14px;padding:7px 13px;border:1px solid #ffffff55;border-radius:999px;font-size:13px}
+.intro{text-align:center;color:var(--muted);margin:22px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.branch{border:1px solid var(--line);border-radius:18px;background:white;padding:16px;text-align:left;color:var(--ink);cursor:pointer;min-height:105px;transition:.18s;box-shadow:0 4px 14px #33234b0a}
+.branch:hover,.branch:focus-visible{transform:translateY(-2px);outline:2px solid var(--purple);outline-offset:2px}
+.branch[aria-pressed="true"]{border:2px solid var(--accent);background:var(--tint);padding:15px}
+.branch-top{display:flex;align-items:center;gap:10px;font-weight:750;font-size:16px}
+.branch-icon{font-size:24px}
+.branch small{display:block;color:#716982;margin:9px 0 0 34px}
+.panel{margin-top:16px;border-radius:22px;background:white;border:1px solid var(--line);padding:22px;box-shadow:0 8px 24px #33234b0c;min-height:230px}
+.panel h2{margin:0 0 8px;font-size:25px}
+.panel .lead{color:var(--muted);margin:0 0 16px}
+ul{padding:0;margin:0;list-style:none;display:grid;gap:11px}
+li{display:flex;gap:11px;align-items:flex-start;line-height:1.45}
+.num{flex:none;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#eee7fa;font-size:13px;font-weight:750}
+.bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
+.progress-wrap{flex:1;min-width:160px}
+.progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:7px}
+.track{height:8px;border-radius:20px;background:#eeeaf3;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#a78bdf,#d5a2c7);transition:width .2s}
+.reset{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px 14px;font-weight:650;cursor:pointer}
+.closing{margin-top:18px;padding:20px;border-radius:18px;background:#eee6fa;text-align:center}
+.closing strong{display:block;font-size:21px;margin-bottom:5px}
+footer{text-align:center;color:#8b8298;font-size:12px;margin-top:18px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.branch{min-height:116px}}
+@media(max-width:360px){main{padding:14px 10px}.branch{padding:12px}.branch-top{font-size:14px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="symbol" aria-hidden="true">🏛️ ✨</div>
+  <h1>Культура для всех</h1>
+  <p>Интерактивная интеллект-карта проекта</p>
+  <span class="tagline">Искусство · Знания · Возможности</span>
+</header>
+
+<p class="intro">Нажми на любую ветвь, чтобы раскрыть её содержание.</p>
+<section class="grid" id="branches" aria-label="Разделы интеллект-карты"></section>
+
+<section class="panel" aria-live="polite" aria-atomic="true">
+  <h2 id="detail-title">Проблема</h2>
+  <p class="lead" id="detail-lead"></p>
+  <ul id="detail-list"></ul>
+  <div class="bottom">
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Изучено разделов</span><strong id="progress-text">0 из 6</strong></div>
+      <div class="track"><div class="fill" id="progress-fill"></div></div>
+    </div>
+    <button class="reset" id="reset" type="button">Начать сначала</button>
+  </div>
+</section>
+
+<section class="closing">
+  <strong>Культура для всех!</strong>
+  Культурная жизнь не должна быть привилегией отдельных людей.
+</section>
+<footer>Медиапроект «Культура для всех»</footer>
+</main>
+<script>
+const data = [
+ {id:"problem",title:"Проблема",icon:"⚠️",color:"#e98d9e",tint:"#fff0f2",lead:"Значительная часть населения постепенно отдаляется от культурной жизни.",items:["Люди реже посещают театры, музеи, выставки и концерты.","Причина не всегда в отсутствии интереса — часто мешают внешние барьеры."]},
+ {id:"barriers",title:"Барьеры",icon:"🚧",color:"#df8caf",tint:"#fff0f6",lead:"Что мешает людям участвовать в культурной жизни?",items:["Высокая стоимость билетов.","Недостаток информации о культурных мероприятиях.","Отсутствие свободного времени.","Убеждение, что искусство предназначено только для определённой аудитории.","Сложность восприятия современного искусства.","Недостаточная доступность для людей с инвалидностью и ограниченной мобильностью."]},
+ {id:"importance",title:"Почему это важно?",icon:"⭐",color:"#e5b75e",tint:"#fff8e8",lead:"Культура — это не только развлечение. Она влияет на человека и общество.",items:["Помогает получать знания и расширять кругозор.","Создаёт возможности для общения.","Развивает критическое мышление.","Помогает сохранять историческую память.","Укрепляет общественные связи."]},
+ {id:"solution",title:"Решение",icon:"💡",color:"#83b994",tint:"#eff9f1",lead:"Медиапроект «Культура для всех».",items:["Создать единую медиаплатформу.","Сделать информацию о культурных событиях понятной и доступной.","Помочь людям находить мероприятия по интересам и возможностям."]},
+ {id:"content",title:"Что будет внутри?",icon:"🧩",color:"#9294df",tint:"#f1f1ff",lead:"Основные возможности медиаплатформы.",items:["Единая афиша бесплатных и недорогих мероприятий.","Подборки выставок, спектаклей и концертов по интересам.","Обзоры произведений искусства простым языком.","Информация о льготах и специальных билетах.","Видеоэкскурсии по музеям и театрам.","Истории людей, которые впервые открыли для себя искусство.","Информация о доступности учреждений культуры."]},
+ {id:"idea",title:"Главная идея",icon:"🎯",color:"#aa83d1",tint:"#f6efff",lead:"Сделать так, чтобы культурная жизнь не была привилегией отдельных людей.",items:["Уменьшать барьеры между человеком и искусством.","Создавать равные возможности для знакомства с культурой.","Показать, что культура открыта каждому."]}
+];
+const grid=document.getElementById("branches");
+const title=document.getElementById("detail-title");
+const lead=document.getElementById("detail-lead");
+const list=document.getElementById("detail-list");
+const progressText=document.getElementById("progress-text");
+const progressFill=document.getElementById("progress-fill");
+const visited=new Set();
+function show(id){
+ const item=data.find(x=>x.id===id);
+ title.textContent=item.title;
+ lead.textContent=item.lead;
+ list.replaceChildren(...item.items.map((text,i)=>{
+   const li=document.createElement("li");
+   const n=document.createElement("span"); n.className="num"; n.textContent=i+1;
+   const t=document.createElement("span"); t.textContent=text;
+   li.append(n,t); return li;
+ }));
+ visited.add(id);
+ [...grid.children].forEach(btn=>btn.setAttribute("aria-pressed",String(btn.dataset.id===id)));
+ progressText.textContent=`${visited.size} из ${data.length}`;
+ progressFill.style.width=`${visited.size/data.length*100}%`;
+}
+data.forEach(item=>{
+ const btn=document.createElement("button");
+ btn.type="button"; btn.className="branch"; btn.dataset.id=item.id;
+ btn.style.setProperty("--accent",item.color); btn.style.setProperty("--tint",item.tint);
+ btn.setAttribute("aria-pressed","false");
+ const top=document.createElement("span"); top.className="branch-top";
+ const icon=document.createElement("span"); icon.className="branch-icon"; icon.textContent=item.icon;
+ const name=document.createElement("span"); name.textContent=item.title;
+ top.append(icon,name);
+ const small=document.createElement("small"); small.textContent=`${item.items.length} пунктов · открыть раздел`;
+ btn.append(top,small); btn.addEventListener("click",()=>show(item.id)); grid.append(btn);
+});
+document.getElementById("reset").addEventListener("click",()=>{
+ visited.clear(); show("problem"); visited.clear();
+ progressText.textContent=`0 из ${data.length}`; progressFill.style.width="0%";
+});
+show("problem"); visited.clear();
+progressText.textContent=`0 из ${data.length}`; progressFill.style.width="0%";
+</script>
+</body>
+</html>
